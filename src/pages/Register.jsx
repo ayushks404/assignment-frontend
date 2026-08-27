@@ -1,16 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import Card from '../components/Card'
 import Button from '../components/Button'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { login, isAuthenticated } = useAuth()
+  
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard')
+    }
+  }, [isAuthenticated, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,14 +35,11 @@ export default function Register() {
     try {
       setLoading(true)
       const res = await api.post('/auth/register', { name, email, password })
-      if (res.data && res.data.token) {
-        localStorage.setItem('token', res.data.token)
-        if (res.data.user) {
-          localStorage.setItem('user', JSON.stringify(res.data.user))
-        }
+      if (res.data && res.data.token && res.data.user) {
+        login(res.data.token, res.data.user)
         navigate('/dashboard')
       } else {
-        setError('Registration succeeded, but no token was returned.')
+        setError('Registration succeeded, but backend returned incomplete data.')
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.')

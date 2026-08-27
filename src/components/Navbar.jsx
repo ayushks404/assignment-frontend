@@ -1,24 +1,11 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
-export default function Navbar({ user, onLogout }) {
+export default function Navbar() {
   const location = useLocation()
+  const { user, logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
-
-  // Get active user (fallback to localStorage, then fallback to mock prop)
-  const getActiveUser = () => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      try {
-        return JSON.parse(savedUser)
-      } catch (e) {
-        // ignore
-      }
-    }
-    return user
-  }
-
-  const currentUser = getActiveUser()
 
   // Hide on login/register pages
   if (location.pathname === '/login' || location.pathname === '/register') {
@@ -68,24 +55,24 @@ export default function Navbar({ user, onLogout }) {
             History
           </Link>
           
-          {currentUser?.role === 'admin' && (
+          {user?.role === 'admin' && (
             <Link to="/admin/users" className={`py-1 transition-colors ${isActive('/admin/users')}`}>
               Users
             </Link>
           )}
 
-          {currentUser && (
+          {user && (
             <div className="flex items-center gap-3 pl-4 border-l border-white/20">
               <span className="text-sm font-semibold text-white/90">
-                {currentUser.name}
+                {user.name}
               </span>
-              {currentUser.role === 'admin' && (
+              {user.role === 'admin' && (
                 <span className="bg-cyan-500/20 text-cyan-300 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                   Admin
                 </span>
               )}
               <button
-                onClick={onLogout}
+                onClick={logout}
                 className="text-xs bg-red-500/25 hover:bg-red-500/40 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-lg transition-colors font-medium cursor-pointer"
               >
                 Logout
@@ -113,7 +100,7 @@ export default function Navbar({ user, onLogout }) {
             History
           </Link>
           
-          {currentUser?.role === 'admin' && (
+          {user?.role === 'admin' && (
             <Link
               to="/admin/users"
               onClick={() => setIsOpen(false)}
@@ -123,13 +110,13 @@ export default function Navbar({ user, onLogout }) {
             </Link>
           )}
 
-          {currentUser && (
+          {user && (
             <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-white/90">
-                  {currentUser.name}
+                  {user.name}
                 </span>
-                {currentUser.role === 'admin' && (
+                {user.role === 'admin' && (
                   <span className="bg-cyan-500/20 text-cyan-300 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                     Admin
                   </span>
@@ -138,7 +125,7 @@ export default function Navbar({ user, onLogout }) {
               <button
                 onClick={() => {
                   setIsOpen(false)
-                  onLogout()
+                  logout()
                 }}
                 className="text-center text-xs bg-red-500/25 hover:bg-red-500/40 text-red-300 border border-red-500/30 px-3 py-2 rounded-lg transition-colors font-medium cursor-pointer w-full"
               >
