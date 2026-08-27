@@ -13,6 +13,12 @@ export default function AdminUserHistory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Goal editing states
+  const [isEditingGoal, setIsEditingGoal] = useState(false)
+  const [goalInput, setGoalInput] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
+
   const fetchUserData = async () => {
     try {
       const [usersRes, historyRes] = await Promise.all([
@@ -41,6 +47,29 @@ export default function AdminUserHistory() {
   useEffect(() => {
     fetchUserData()
   }, [id])
+
+  // Save updated goal to backend
+  const handleSaveGoal = async () => {
+    setEditError('')
+    const parsedGoal = parseInt(goalInput, 10)
+
+    if (isNaN(parsedGoal) || parsedGoal <= 0) {
+      setEditError('Goal must be a positive number.')
+      return
+    }
+
+    try {
+      setEditLoading(true)
+      // Call PATCH /admin/users/:id/goal
+      await api.patch(`/admin/users/${id}/goal`, { dailyGoalMl: parsedGoal })
+      setIsEditingGoal(false)
+      await fetchUserData() // Reload page data so charts recalculate
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update daily goal.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
 
   // Timezone-safe date utility (matches personal History view)
   const formatHistoryDate = (dateStr) => {
@@ -112,9 +141,53 @@ export default function AdminUserHistory() {
               <p className="text-xs text-cyan-200/50 break-all">{user.email}</p>
             </div>
             
-            <div className="flex flex-col md:text-right">
-              <span className="text-xs uppercase tracking-widest text-cyan-200/40 font-semibold mb-0.5">Daily Goal</span>
-              <span className="text-xl font-black text-white">{user.dailyGoalMl} ml</span>
+            <div className="flex flex-col md:items-end justify-center min-h-[64px]">
+              <span className="text-xs uppercase tracking-widest text-cyan-200/40 font-semibold mb-1">Daily Goal</span>
+              
+              {isEditingGoal ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="number"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    className="w-24 bg-white/5 border border-white/20 rounded-lg px-2.5 py-1 text-white placeholder-white/30 focus:outline-none focus:border-cyan-400 text-sm font-bold text-center"
+                    placeholder="e.g. 2000"
+                    min="1"
+                    required
+                  />
+                  <button
+                    onClick={handleSaveGoal}
+                    disabled={editLoading}
+                    className="text-xs bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 px-2.5 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer"
+                  >
+                    {editLoading ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => setIsEditingGoal(false)}
+                    className="text-xs bg-white/5 hover:bg-white/10 text-white/70 border border-white/15 px-2.5 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-black text-white">{user.dailyGoalMl} ml</span>
+                  <button
+                    onClick={() => {
+                      setGoalInput(user.dailyGoalMl.toString())
+                      setIsEditingGoal(true)
+                      setEditError('')
+                    }}
+                    className="text-[10px] uppercase font-bold tracking-widest text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 px-2 py-1 rounded transition-colors cursor-pointer"
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
+
+              {editError && (
+                <span className="text-[10px] text-red-400 mt-1.5 animate-pulse font-medium">{editError}</span>
+              )}
             </div>
           </Card>
 
