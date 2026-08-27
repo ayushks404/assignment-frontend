@@ -22,6 +22,7 @@ export default function AdminUserHistory() {
   // Custom delete daily logs modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [dayToDelete, setDayToDelete] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const fetchUserData = async () => {
     try {
@@ -74,13 +75,20 @@ export default function AdminUserHistory() {
     }
   }
 
-  // Handle simulated deletion of a day's logs
-  const handleDeleteConfirm = () => {
+  // Handle persistent deletion of a day's logs via backend
+  const handleDeleteConfirm = async () => {
     if (!dayToDelete) return
-    // Remove selected day's card from frontend state list
-    setHistory((prevHistory) => prevHistory.filter((day) => day.date !== dayToDelete.date))
-    setShowDeleteModal(false)
-    setDayToDelete(null)
+    try {
+      setDeleteLoading(true)
+      await api.delete(`/admin/users/${id}/history/${dayToDelete.date}`)
+      setHistory((prevHistory) => prevHistory.filter((day) => day.date !== dayToDelete.date))
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete logs for this day.')
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+      setDayToDelete(null)
+    }
   }
 
   // Timezone-safe date utility (matches personal History view)
@@ -290,15 +298,17 @@ export default function AdminUserHistory() {
                   setShowDeleteModal(false)
                   setDayToDelete(null)
                 }}
-                className="text-xs bg-white/5 hover:bg-white/10 text-white/70 border border-white/15 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+                disabled={deleteLoading}
+                className="text-xs bg-white/5 hover:bg-white/10 text-white/70 border border-white/15 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-55"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="text-xs bg-red-500/25 hover:bg-red-500/40 text-red-300 border border-red-500/30 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+                disabled={deleteLoading}
+                className="text-xs bg-red-500/25 hover:bg-red-500/40 text-red-300 border border-red-500/30 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-55"
               >
-                Delete Logs
+                {deleteLoading ? 'Deleting...' : 'Delete Logs'}
               </button>
             </div>
           </Card>
