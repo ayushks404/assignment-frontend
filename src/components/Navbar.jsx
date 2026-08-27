@@ -5,6 +5,21 @@ export default function Navbar({ user, onLogout }) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
 
+  // Get active user (fallback to localStorage, then fallback to mock prop)
+  const getActiveUser = () => {
+    const savedUser = localStorage.getItem('user')
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser)
+      } catch (e) {
+        // ignore
+      }
+    }
+    return user
+  }
+
+  const currentUser = getActiveUser()
+
   // Hide on login/register pages
   if (location.pathname === '/login' || location.pathname === '/register') {
     return null
@@ -53,18 +68,18 @@ export default function Navbar({ user, onLogout }) {
             History
           </Link>
           
-          {user?.role === 'admin' && (
+          {currentUser?.role === 'admin' && (
             <Link to="/admin/users" className={`py-1 transition-colors ${isActive('/admin/users')}`}>
               Users
             </Link>
           )}
 
-          {user && (
+          {currentUser && (
             <div className="flex items-center gap-3 pl-4 border-l border-white/20">
               <span className="text-sm font-semibold text-white/90">
-                {user.name}
+                {currentUser.name}
               </span>
-              {user.role === 'admin' && (
+              {currentUser.role === 'admin' && (
                 <span className="bg-cyan-500/20 text-cyan-300 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                   Admin
                 </span>
@@ -98,7 +113,7 @@ export default function Navbar({ user, onLogout }) {
             History
           </Link>
           
-          {user?.role === 'admin' && (
+          {currentUser?.role === 'admin' && (
             <Link
               to="/admin/users"
               onClick={() => setIsOpen(false)}
@@ -108,13 +123,13 @@ export default function Navbar({ user, onLogout }) {
             </Link>
           )}
 
-          {user && (
+          {currentUser && (
             <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-white/90">
-                  {user.name}
+                  {currentUser.name}
                 </span>
-                {user.role === 'admin' && (
+                {currentUser.role === 'admin' && (
                   <span className="bg-cyan-500/20 text-cyan-300 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                     Admin
                   </span>
