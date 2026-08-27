@@ -31,6 +31,7 @@ export default function Dashboard() {
         setGoalMl(res.data.goalMl || 2000)
         setRemainingMl(res.data.remainingMl ?? 2000)
         setPercent(res.data.percent || 0)
+        setTodayLogs(res.data.logs || [])
       }
     } catch (err) {
       console.error('Failed to fetch today\'s intake:', err.message)
@@ -40,30 +41,9 @@ export default function Dashboard() {
     }
   }
 
-  // Load today's logs from localStorage on mount
   useEffect(() => {
     fetchTodayData()
-    
-    if (user?.id) {
-      const saved = localStorage.getItem(`today_logs_${user.id}`)
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          const startOfToday = new Date()
-          startOfToday.setHours(0, 0, 0, 0)
-          
-          // Filter out logs from previous days
-          const logsToday = parsed.filter(
-            (log) => new Date(log.loggedAt || log.createdAt) >= startOfToday
-          )
-          setTodayLogs(logsToday)
-          localStorage.setItem(`today_logs_${user.id}`, JSON.stringify(logsToday))
-        } catch (e) {
-          setTodayLogs([])
-        }
-      }
-    }
-  }, [user])
+  }, [])
 
   // Handle logging amount
   const handleLogIntake = async (amount) => {
@@ -77,15 +57,7 @@ export default function Dashboard() {
 
     try {
       setSubmitLoading(true)
-      const res = await api.post('/intake', { amountMl: parsedAmount })
-      
-      // Save returning log object (contains database ID and timestamp)
-      if (res.data && user?.id) {
-        const updated = [...todayLogs, res.data]
-        setTodayLogs(updated)
-        localStorage.setItem(`today_logs_${user.id}`, JSON.stringify(updated))
-      }
-      
+      await api.post('/intake', { amountMl: parsedAmount })
       setCustomAmount('')
       await fetchTodayData()
     } catch (err) {
@@ -103,16 +75,11 @@ export default function Dashboard() {
 
   // Handle delete call to backend
   const handleDeleteConfirm = async () => {
-    if (!logToDelete || !user?.id) return
+    if (!logToDelete) return
 
     try {
       setSubmitLoading(true)
       await api.delete(`/intake/${logToDelete._id}`)
-      
-      const updated = todayLogs.filter((log) => log._id !== logToDelete._id)
-      setTodayLogs(updated)
-      localStorage.setItem(`today_logs_${user.id}`, JSON.stringify(updated))
-      
       setShowDeleteModal(false)
       setLogToDelete(null)
       await fetchTodayData()
