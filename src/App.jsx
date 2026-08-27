@@ -1,29 +1,39 @@
-import { useEffect } from 'react'
-import api from './api/client'
+import Button from './components/Button'
+import Card from './components/Card'
+import WaveBackground from './components/WaveBackground'
 
 function App() {
-  useEffect(() => {
-    console.log('Fetching backend health status...')
-    api.get('/health')
-      .then((res) => {
-        console.log('Health response received:', res.status, res.data)
-      })
-      .catch((err) => {
-        console.error('Health request failed (expected if backend offline):', err.message)
-      })
-  }, [])
-
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
-      <div className="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700 text-center max-w-md">
-        <h1 className="text-3xl font-bold text-blue-400 mb-2">Water Tracker</h1>
-        <p className="text-slate-300 mb-6">
-          API client (Axios) integrated. Check the browser console for `/health` response.
-        </p>
-        <div className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
-          Step 1 Verification
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-ocean-dark via-ocean-mid to-blue-900 text-white flex flex-col items-center justify-center p-6 overflow-hidden">
+      
+      {/* Visual content container (elevated above waves) */}
+      <Card className="w-full max-w-md text-center z-10">
+        <div className="flex justify-center mb-4">
+          {/* SVG Water Droplet Icon */}
+          <svg className="w-14 h-14 text-cyan-400 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+          </svg>
         </div>
-      </div>
+        
+        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
+          Water Tracker
+        </h1>
+        <p className="text-cyan-100/70 mb-6 text-sm">
+          Theme foundation is established. The water color scheme, glassy components, and animated waves are fully integrated.
+        </p>
+
+        <div className="flex flex-col gap-3">
+          <Button variant="primary">
+            Primary Action
+          </Button>
+          <Button variant="secondary">
+            Secondary Action
+          </Button>
+        </div>
+      </Card>
+
+      {/* Animated waves at bottom */}
+      <WaveBackground />
     </div>
   )
 }

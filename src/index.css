@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ocean-dark: #030f26;
+  --color-ocean-mid: #07224f;
+  --color-wave-color: #00b4d8;
+  --color-foam-color: #caf0f8;
+  
+  --animate-wave: wave 12s linear infinite;
+
+  @keyframes wave {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-ocean-dark);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+}
