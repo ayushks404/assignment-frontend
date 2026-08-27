@@ -1,40 +1,49 @@
-import Button from './components/Button'
-import Card from './components/Card'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import WaveBackground from './components/WaveBackground'
+import Register from './pages/Register'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import History from './pages/History'
+import AdminUsers from './pages/AdminUsers'
+import AdminUserHistory from './pages/AdminUserHistory'
 
 function App() {
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-br from-ocean-dark via-ocean-mid to-blue-900 text-white flex flex-col items-center justify-center p-6 overflow-hidden">
-      
-      {/* Visual content container (elevated above waves) */}
-      <Card className="w-full max-w-md text-center z-10">
-        <div className="flex justify-center mb-4">
-          {/* SVG Water Droplet Icon */}
-          <svg className="w-14 h-14 text-cyan-400 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-          </svg>
-        </div>
+    <BrowserRouter>
+      <div className="relative min-h-screen w-full bg-gradient-to-br from-ocean-dark via-ocean-mid to-blue-900 text-white flex flex-col p-6 overflow-hidden">
         
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-          Water Tracker
-        </h1>
-        <p className="text-cyan-100/70 mb-6 text-sm">
-          Theme foundation is established. The water color scheme, glassy components, and animated waves are fully integrated.
-        </p>
+        {/* Temporary Navigation Shell (Step 3 Test Only) */}
+        <nav className="mb-8 z-10 bg-white/5 p-4 rounded-xl border border-white/10 flex flex-wrap gap-4 justify-center text-sm font-semibold select-none">
+          <Link to="/register" className="hover:text-cyan-300 transition-colors">Register</Link>
+          <Link to="/login" className="hover:text-cyan-300 transition-colors">Login</Link>
+          <Link to="/dashboard" className="hover:text-cyan-300 transition-colors">Dashboard</Link>
+          <Link to="/history" className="hover:text-cyan-300 transition-colors">History</Link>
+          <Link to="/admin/users" className="hover:text-cyan-300 transition-colors">Admin Users</Link>
+          <Link to="/admin/users/123" className="hover:text-cyan-300 transition-colors">Admin User 123</Link>
+        </nav>
 
-        <div className="flex flex-col gap-3">
-          <Button variant="primary">
-            Primary Action
-          </Button>
-          <Button variant="secondary">
-            Secondary Action
-          </Button>
+        {/* Routed Components Outlet */}
+        <div className="flex-1 flex flex-col items-center justify-center z-10 w-full max-w-6xl mx-auto">
+          <Routes>
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/users/:id" element={<AdminUserHistory />} />
+            <Route path="*" element={
+              <div className="text-center bg-white/5 border border-white/10 p-8 rounded-2xl max-w-sm">
+                <h2 className="text-xl font-bold mb-2">Welcome to Water Tracker</h2>
+                <p className="text-cyan-200/50 text-sm">Please select a route from the navigation bar above to verify the routing shell.</p>
+              </div>
+            } />
+          </Routes>
         </div>
-      </Card>
 
-      {/* Animated waves at bottom */}
-      <WaveBackground />
-    </div>
+        {/* Animated wave backdrop */}
+        <WaveBackground />
+      </div>
+    </BrowserRouter>
   )
 }
 
