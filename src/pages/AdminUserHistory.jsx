@@ -19,6 +19,10 @@ export default function AdminUserHistory() {
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
 
+  // Custom delete daily logs modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [dayToDelete, setDayToDelete] = useState(null)
+
   const fetchUserData = async () => {
     try {
       const [usersRes, historyRes] = await Promise.all([
@@ -60,15 +64,23 @@ export default function AdminUserHistory() {
 
     try {
       setEditLoading(true)
-      // Call PATCH /admin/users/:id/goal
       await api.patch(`/admin/users/${id}/goal`, { dailyGoalMl: parsedGoal })
       setIsEditingGoal(false)
-      await fetchUserData() // Reload page data so charts recalculate
+      await fetchUserData()
     } catch (err) {
       setEditError(err.response?.data?.message || 'Failed to update daily goal.')
     } finally {
       setEditLoading(false)
     }
+  }
+
+  // Handle simulated deletion of a day's logs
+  const handleDeleteConfirm = () => {
+    if (!dayToDelete) return
+    // Remove selected day's card from frontend state list
+    setHistory((prevHistory) => prevHistory.filter((day) => day.date !== dayToDelete.date))
+    setShowDeleteModal(false)
+    setDayToDelete(null)
   }
 
   // Timezone-safe date utility (matches personal History view)
@@ -211,9 +223,20 @@ export default function AdminUserHistory() {
                       className="flex flex-col gap-3 border border-white/10 hover:border-cyan-500/20 transition-colors duration-300"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-white text-base">
-                          {formatHistoryDate(day.date)}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-white text-base">
+                            {formatHistoryDate(day.date)}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setDayToDelete(day)
+                              setShowDeleteModal(true)
+                            }}
+                            className="text-[9px] uppercase font-bold tracking-widest text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-2 py-0.5 rounded transition-colors cursor-pointer select-none"
+                          >
+                            Delete
+                          </button>
+                        </div>
                         <div className="flex items-baseline gap-2 text-right">
                           <span className="text-sm font-bold text-white">{day.totalMl} ml</span>
                           <span className="text-xs text-cyan-200/50">/ {day.goalMl} ml</span>
@@ -242,6 +265,46 @@ export default function AdminUserHistory() {
 
         </div>
       )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {showDeleteModal && dayToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <Card className="w-full max-w-sm border border-red-500/20 shadow-2xl relative flex flex-col gap-6">
+            
+            <div className="flex items-center gap-3">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-2.5 rounded-xl">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Delete Daily Logs</h3>
+            </div>
+
+            <p className="text-sm text-cyan-200/70 leading-relaxed">
+              Are you sure you want to remove all water intake logs for <strong className="text-white">{formatHistoryDate(dayToDelete.date)}</strong>?
+            </p>
+
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setDayToDelete(null)
+                }}
+                className="text-xs bg-white/5 hover:bg-white/10 text-white/70 border border-white/15 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="text-xs bg-red-500/25 hover:bg-red-500/40 text-red-300 border border-red-500/30 px-4 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+              >
+                Delete Logs
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+
     </div>
   )
 }
